@@ -1,0 +1,3 @@
+[submodule "solo/tunnel_project"]
+	path = solo/tunnel_project
+	url = git@github.com:hpiotr6/tunnel_project.git
