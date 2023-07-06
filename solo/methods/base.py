@@ -203,7 +203,7 @@ class BaseMethod(pl.LightningModule):
                 )
                 self.backbone.maxpool = nn.Identity()
 
-        if self.backbone_name.startswith("vgg"):
+        elif self.backbone_name.startswith("vgg"):
             self.features_dim: int = self.backbone.classifier[0].in_features
             # remove fc layer
             self.backbone.classifier = nn.Identity()
