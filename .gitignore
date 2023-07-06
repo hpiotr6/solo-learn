@@ -1,5 +1,5 @@
-# tensorboard dir
-runs/
+# # tensorboard dir
+# runs/
 
 # wandb dir
 wandb/

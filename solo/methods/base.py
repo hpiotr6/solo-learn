@@ -202,6 +202,17 @@ class BaseMethod(pl.LightningModule):
                     3, 64, kernel_size=3, stride=1, padding=2, bias=False
                 )
                 self.backbone.maxpool = nn.Identity()
+
+        if self.backbone_name.startswith("vgg"):
+            self.features_dim: int = self.backbone.classifier[0].in_features
+            # remove fc layer
+            self.backbone.classifier = nn.Identity()
+            cifar = cfg.data.dataset in ["cifar10", "cifar100"]
+            if cifar:
+                self.backbone.features[0] = nn.Conv2d(
+                    3, 64, kernel_size=3, stride=1, padding=2, bias=False
+                )
+                self.backbone.features[-1] = nn.Identity()
         else:
             self.features_dim: int = self.backbone.num_features
         ##############################
