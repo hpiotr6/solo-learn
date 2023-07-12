@@ -19,18 +19,18 @@ backbone:
 method_kwargs:
   proj_hidden_dim: 2048
   proj_output_dim: 2048
-  scale_loss: 0.1
+  scale_loss: 0.001
 data:
   dataset: cifar10 # change here for cifar100
   train_path: "./datasets"
   val_path: "./datasets"
   format: "image_folder"
-  num_workers: 0
+  num_workers: 14
 optimizer:
   name: "lars"
   batch_size: 256
   lr: 0.03
-  classifier_lr: 0.01
+  classifier_lr: 0.0001
   weight_decay: 1e-4
   kwargs:
     clip_lr: True
@@ -44,8 +44,8 @@ auto_resume:
   enabled: False
 
 # overwrite PL stuff
-max_epochs: 1000
-overfit_batches: 10
+max_epochs: 200
+# overfit_batches: 10
 
 # gpu
 scheduler:
