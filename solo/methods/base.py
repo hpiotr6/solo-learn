@@ -27,6 +27,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from solo.backbones import (
+    vgg19_bn,
     vgg19,
     convnext_base,
     convnext_large,
@@ -72,6 +73,7 @@ def static_lr(
 
 class BaseMethod(pl.LightningModule):
     _BACKBONES = {
+        "vgg19_bn": vgg19_bn,
         "vgg19": vgg19,
         "resnet18": resnet18,
         "resnet50": resnet50,
