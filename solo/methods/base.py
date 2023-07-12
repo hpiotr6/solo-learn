@@ -74,11 +74,8 @@ def static_lr(
 
 class BaseMethod(pl.LightningModule):
     _BACKBONES = {
-<<<<<<< HEAD
         "resnet_custom": resnet_custom,
-=======
         "vgg19_bn": vgg19_bn,
->>>>>>> 32adf6c9a58758768e6c51c9f01149c6caaf923c
         "vgg19": vgg19,
         "resnet18": resnet18,
         "resnet50": resnet50,
