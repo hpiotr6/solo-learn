@@ -11,10 +11,12 @@ hydra:
   run:
     dir: .
 
-name: "simclr-cifar10" # change here for cifar100
+name: "simclr-cifar10-vgg-pretrained" # change here for cifar100
 method: "simclr"
 backbone:
-  name: "resnet18"
+  name: "vgg19"
+  kwargs:
+    weights: "IMAGENET1K_V1"
 method_kwargs:
   proj_hidden_dim: 2048
   proj_output_dim: 256
@@ -22,7 +24,7 @@ method_kwargs:
 data:
   dataset: cifar10 # change here for cifar100
   train_path: "./datasets"
-  val_path: "datasets/imagenet100/val"
+  val_path: "./datasets"
   format: "image_folder"
   num_workers: 4
 optimizer:
@@ -42,7 +44,7 @@ checkpoint:
   dir: "trained_models"
   frequency: 1
 auto_resume:
-  enabled: True
+  enabled: False
 
 # overwrite PL stuff
 max_epochs: 1000
