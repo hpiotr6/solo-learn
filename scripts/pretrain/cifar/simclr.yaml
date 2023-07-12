@@ -11,12 +11,21 @@ hydra:
   run:
     dir: .
 
-name: "simclr-cifar10-vgg-pretrained" # change here for cifar100
+name: "simclr-cifar10-resnet18_wo_skip" # change here for cifar100
 method: "simclr"
 backbone:
-  name: "vgg19"
+  name: "resnet_custom"
   kwargs:
-    weights: "IMAGENET1K_V1"
+    model_config:
+      backbone_type: "resnet18"
+      only_features: True
+      batchnorm_layers: True
+      width_scale: 1
+      skips: False
+# backbone:
+#   name: "vgg19"
+#   kwargs:
+#     weights: "IMAGENET1K_V1"
 method_kwargs:
   proj_hidden_dim: 2048
   proj_output_dim: 256
