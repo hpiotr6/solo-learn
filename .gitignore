@@ -1,5 +1,7 @@
-# tensorboard dir
-runs/
+slurm*.out
+data
+# # tensorboard dir
+# runs/
 
 # wandb dir
 wandb/

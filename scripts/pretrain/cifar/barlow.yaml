@@ -14,17 +14,27 @@ hydra:
 name: "barlow_twins-cifar10" # change here for cifar100
 method: "barlow_twins"
 backbone:
-  name: "resnet18"
+  name: "vgg19_bn"
+  # name: "resnet18"
+  # name: "resnet_custom"
+  # kwargs:
+  #   model_config:
+  #     backbone_type: "resnet18"
+  #     only_features: True
+  #     batchnorm_layers: True
+  #     width_scale: 1
+  #     skips: False
+  
 method_kwargs:
   proj_hidden_dim: 2048
   proj_output_dim: 2048
-  scale_loss: 0.1
+  scale_loss: 0.01
 data:
   dataset: cifar10 # change here for cifar100
   train_path: "./datasets"
   val_path: "./datasets"
   format: "image_folder"
-  num_workers: 4
+  num_workers: 14
 optimizer:
   name: "lars"
   batch_size: 256
@@ -35,19 +45,31 @@ optimizer:
     clip_lr: True
     eta: 0.02
     exclude_bias_n_norm: True
-scheduler:
-  name: "warmup_cosine"
 checkpoint:
   enabled: True
   dir: "trained_models"
   frequency: 1
 auto_resume:
-  enabled: True
+  enabled: False
 
 # overwrite PL stuff
 max_epochs: 1000
-devices: [0]
+# overfit_batches: 10
+
+# gpu
+scheduler:
+  name: "warmup_cosine"
 sync_batchnorm: True
+devices: [0]
 accelerator: "gpu"
 strategy: "ddp"
 precision: 16
+
+# cpu
+# scheduler:
+#   name: "none"
+# sync_batchnorm: False
+# devices: 1
+# accelerator: "cpu"
+# strategy: "ddp"
+# precision: "32-true"

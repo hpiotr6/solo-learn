@@ -27,6 +27,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from solo.backbones import (
+    resnet_custom,
+    vgg19_bn,
+    vgg19,
     convnext_base,
     convnext_large,
     convnext_small,
@@ -71,6 +74,9 @@ def static_lr(
 
 class BaseMethod(pl.LightningModule):
     _BACKBONES = {
+        "resnet_custom": resnet_custom,
+        "vgg19_bn": vgg19_bn,
+        "vgg19": vgg19,
         "resnet18": resnet18,
         "resnet50": resnet50,
         "vit_tiny": vit_tiny,
@@ -200,6 +206,17 @@ class BaseMethod(pl.LightningModule):
                     3, 64, kernel_size=3, stride=1, padding=2, bias=False
                 )
                 self.backbone.maxpool = nn.Identity()
+
+        elif self.backbone_name.startswith("vgg"):
+            self.features_dim: int = 512
+            # remove fc layer
+            self.backbone.classifier = nn.Identity()
+            cifar = cfg.data.dataset in ["cifar10", "cifar100"]
+            if cifar:
+                self.backbone.features[0] = nn.Conv2d(
+                    3, 64, kernel_size=3, stride=1, padding=2, bias=False
+                )
+                self.backbone.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         else:
             self.features_dim: int = self.backbone.num_features
         ##############################
@@ -253,7 +270,9 @@ class BaseMethod(pl.LightningModule):
         self.knn_eval: bool = cfg.knn_eval.enabled
         self.knn_k: int = cfg.knn_eval.k
         if self.knn_eval:
-            self.knn = WeightedKNNClassifier(k=self.knn_k, distance_fx=cfg.knn.distance_func)
+            self.knn = WeightedKNNClassifier(
+                k=self.knn_k, distance_fx=cfg.knn.distance_func
+            )
 
         # for performance
         self.no_channel_last = cfg.performance.disable_channel_last
@@ -283,20 +302,30 @@ class BaseMethod(pl.LightningModule):
         cfg.optimizer.kwargs = omegaconf_select(cfg, "optimizer.kwargs", {})
 
         # default for acc grad batches
-        cfg.accumulate_grad_batches = omegaconf_select(cfg, "accumulate_grad_batches", 1)
+        cfg.accumulate_grad_batches = omegaconf_select(
+            cfg, "accumulate_grad_batches", 1
+        )
 
         # default parameters for the scheduler
-        cfg.scheduler.lr_decay_steps = omegaconf_select(cfg, "scheduler.lr_decay_steps", None)
+        cfg.scheduler.lr_decay_steps = omegaconf_select(
+            cfg, "scheduler.lr_decay_steps", None
+        )
         cfg.scheduler.min_lr = omegaconf_select(cfg, "scheduler.min_lr", 0.0)
-        cfg.scheduler.warmup_start_lr = omegaconf_select(cfg, "scheduler.warmup_start_lr", 3e-5)
-        cfg.scheduler.warmup_epochs = omegaconf_select(cfg, "scheduler.warmup_epochs", 10)
+        cfg.scheduler.warmup_start_lr = omegaconf_select(
+            cfg, "scheduler.warmup_start_lr", 3e-5
+        )
+        cfg.scheduler.warmup_epochs = omegaconf_select(
+            cfg, "scheduler.warmup_epochs", 10
+        )
         cfg.scheduler.interval = omegaconf_select(cfg, "scheduler.interval", "step")
 
         # default parameters for knn eval
         cfg.knn_eval = omegaconf_select(cfg, "knn_eval", {})
         cfg.knn_eval.enabled = omegaconf_select(cfg, "knn_eval.enabled", False)
         cfg.knn_eval.k = omegaconf_select(cfg, "knn_eval.k", 20)
-        cfg.knn_eval.distance_func = omegaconf_select(cfg, "knn_eval.distance_func", "euclidean")
+        cfg.knn_eval.distance_func = omegaconf_select(
+            cfg, "knn_eval.distance_func", "euclidean"
+        )
 
         # default parameters for performance optimization
         cfg.performance = omegaconf_select(cfg, "performance", {})
@@ -342,7 +371,9 @@ class BaseMethod(pl.LightningModule):
             learnable_params = remove_bias_and_norm_from_weight_decay(learnable_params)
 
         # indexes of parameters without lr scheduler
-        idxs_no_scheduler = [i for i, m in enumerate(learnable_params) if m.pop("static_lr", False)]
+        idxs_no_scheduler = [
+            i for i, m in enumerate(learnable_params) if m.pop("static_lr", False)
+        ]
 
         assert self.optimizer in self._OPTIMIZERS
         optimizer = self._OPTIMIZERS[self.optimizer]
@@ -360,7 +391,8 @@ class BaseMethod(pl.LightningModule):
 
         if self.scheduler == "warmup_cosine":
             max_warmup_steps = (
-                self.warmup_epochs * (self.trainer.estimated_stepping_batches / self.max_epochs)
+                self.warmup_epochs
+                * (self.trainer.estimated_stepping_batches / self.max_epochs)
                 if self.scheduler_interval == "step"
                 else self.warmup_epochs
             )
@@ -374,7 +406,9 @@ class BaseMethod(pl.LightningModule):
                     optimizer,
                     warmup_epochs=max_warmup_steps,
                     max_epochs=max_scheduler_steps,
-                    warmup_start_lr=self.warmup_start_lr if self.warmup_epochs > 0 else self.lr,
+                    warmup_start_lr=self.warmup_start_lr
+                    if self.warmup_epochs > 0
+                    else self.lr,
                     eta_min=self.min_lr,
                 ),
                 "interval": self.scheduler_interval,
@@ -512,7 +546,9 @@ class BaseMethod(pl.LightningModule):
         outs = {k: [out[k] for out in outs] for k in outs[0].keys()}
 
         if self.multicrop:
-            multicrop_outs = [self.multicrop_forward(x) for x in X[self.num_large_crops :]]
+            multicrop_outs = [
+                self.multicrop_forward(x) for x in X[self.num_large_crops :]
+            ]
             for k in multicrop_outs[0].keys():
                 outs[k] = outs.get(k, []) + [out[k] for out in multicrop_outs]
 
@@ -533,7 +569,9 @@ class BaseMethod(pl.LightningModule):
             targets = targets.repeat(self.num_large_crops)
             mask = targets != -1
             self.knn(
-                train_features=torch.cat(outs["feats"][: self.num_large_crops])[mask].detach(),
+                train_features=torch.cat(outs["feats"][: self.num_large_crops])[
+                    mask
+                ].detach(),
                 train_targets=targets[mask],
             )
 
@@ -581,7 +619,9 @@ class BaseMethod(pl.LightningModule):
         out = self.base_validation_step(X, targets)
 
         if self.knn_eval and not self.trainer.sanity_checking:
-            self.knn(test_features=out.pop("feats").detach(), test_targets=targets.detach())
+            self.knn(
+                test_features=out.pop("feats").detach(), test_targets=targets.detach()
+            )
 
         metrics = {
             "batch_size": batch_size,
@@ -654,12 +694,16 @@ class BaseMomentumMethod(BaseMethod):
 
         # momentum classifier
         if cfg.momentum.classifier:
-            self.momentum_classifier: Any = nn.Linear(self.features_dim, self.num_classes)
+            self.momentum_classifier: Any = nn.Linear(
+                self.features_dim, self.num_classes
+            )
         else:
             self.momentum_classifier = None
 
         # momentum updater
-        self.momentum_updater = MomentumUpdater(cfg.momentum.base_tau, cfg.momentum.final_tau)
+        self.momentum_updater = MomentumUpdater(
+            cfg.momentum.base_tau, cfg.momentum.final_tau
+        )
 
     @property
     def learnable_params(self) -> List[Dict[str, Any]]:
@@ -703,7 +747,9 @@ class BaseMomentumMethod(BaseMethod):
             omegaconf.DictConfig: same as the argument, used to avoid errors.
         """
 
-        cfg = super(BaseMomentumMethod, BaseMomentumMethod).add_and_assert_specific_cfg(cfg)
+        cfg = super(BaseMomentumMethod, BaseMomentumMethod).add_and_assert_specific_cfg(
+            cfg
+        )
 
         cfg.momentum.base_tau = omegaconf_select(cfg, "momentum.base_tau", 0.99)
         cfg.momentum.final_tau = omegaconf_select(cfg, "momentum.final_tau", 1.0)
@@ -732,7 +778,9 @@ class BaseMomentumMethod(BaseMethod):
         feats = self.momentum_backbone(X)
         return {"feats": feats}
 
-    def _shared_step_momentum(self, X: torch.Tensor, targets: torch.Tensor) -> Dict[str, Any]:
+    def _shared_step_momentum(
+        self, X: torch.Tensor, targets: torch.Tensor
+    ) -> Dict[str, Any]:
         """Forwards a batch of images X in the momentum backbone and optionally computes the
         classification loss, the logits, the features, acc@1 and acc@5 for of momentum classifier.
 
@@ -782,7 +830,8 @@ class BaseMomentumMethod(BaseMethod):
 
         momentum_outs = [self._shared_step_momentum(x, targets) for x in X]
         momentum_outs = {
-            "momentum_" + k: [out[k] for out in momentum_outs] for k in momentum_outs[0].keys()
+            "momentum_" + k: [out[k] for out in momentum_outs]
+            for k in momentum_outs[0].keys()
         }
 
         if self.momentum_classifier is not None:
@@ -810,7 +859,9 @@ class BaseMomentumMethod(BaseMethod):
         outs.update(momentum_outs)
         return outs
 
-    def on_train_batch_end(self, outputs: Dict[str, Any], batch: Sequence[Any], batch_idx: int):
+    def on_train_batch_end(
+        self, outputs: Dict[str, Any], batch: Sequence[Any], batch_idx: int
+    ):
         """Performs the momentum update of momentum pairs using exponential moving average at the
         end of the current training step if an optimizer step was performed.
 
@@ -858,7 +909,9 @@ class BaseMomentumMethod(BaseMethod):
                 momentum classifiers.
         """
 
-        metrics = super().validation_step(batch, batch_idx, update_validation_step_outputs=False)
+        metrics = super().validation_step(
+            batch, batch_idx, update_validation_step_outputs=False
+        )
 
         X, targets = batch
 
