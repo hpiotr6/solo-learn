@@ -155,6 +155,11 @@ pip3 install -e .[umap,h5]
 pre-commit install
 ```
 
+For submodules:
+```
+git submodule update --init --recursive
+```
+
 **NOTE:** if you are having trouble with dali, install it following their [guide](https://github.com/NVIDIA/DALI).
 
 **NOTE 2:** consider installing [Pillow-SIMD](https://github.com/uploadcare/pillow-simd) for better loading times when not using Dali.
@@ -163,6 +168,17 @@ pre-commit install
 
 ---
 
+## Tunnels Usage
+```sh
+python3.10 \
+    -W ignore::DeprecationWarning \
+    -m solo.tunnel_project.tunnel_analysis \
+    --rpath path_to_tests_results
+```
+
+**NOTE:** you have to initialise repo with submodules
+
+---
 ## Training
 
 For pretraining the backbone, follow one of the many bash files in `scripts/pretrain/`.
