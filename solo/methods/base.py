@@ -213,10 +213,9 @@ class BaseMethod(pl.LightningModule):
             self.backbone.classifier = nn.Identity()
             cifar = cfg.data.dataset in ["cifar10", "cifar100"]
             if cifar:
-                # self.backbone.features[0] = nn.Conv2d(
-                #     3, 64, kernel_size=3, stride=1, padding=2, bias=False
-                # )
-                # self.backbone.features[-1] = nn.Identity()
+                self.backbone.features[0] = nn.Conv2d(
+                    3, 64, kernel_size=3, stride=1, padding=2, bias=False
+                )
                 self.backbone.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         else:
             self.features_dim: int = self.backbone.num_features
