@@ -19,6 +19,7 @@
 
 import inspect
 import os
+import logging
 
 import hydra
 import torch
@@ -206,6 +207,9 @@ def main(cfg: DictConfig):
             frequency=cfg.auto_umap.frequency,
         )
         callbacks.append(auto_umap)
+
+    # configure logging at the root level of Lightning
+    logging.getLogger("lightning.pytorch").setLevel(logging.INFO)
 
     # wandb logging
     if cfg.wandb.enabled:
