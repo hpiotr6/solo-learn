@@ -1,3 +1,4 @@
+seed:
 defaults:
   - _self_
   - augmentations: symmetric.yaml
@@ -11,21 +12,23 @@ hydra:
   run:
     dir: .
 
-name: "vgg_bn" # change here for cifar100
 method: "simclr"
+# name: "resnet34_nomodify_noskips_3"
 # backbone:
-  # name: "resnet_custom"
-  # kwargs:
-  #   model_config:
-  #     backbone_type: "resnet18"
-  #     only_features: True
-  #     batchnorm_layers: True
-  #     width_scale: 1
-  #     skips: True
+#   name: "resnet_custom"
+#   modify_to_cifar: False
+#   kwargs:
+#     model_config:
+#       backbone_type: "resnet34"
+#       only_features: True
+#       batchnorm_layers: True
+#       width_scale: 1
+#       skips: False
+name: "vgg19_bn_3"
 backbone:
   name: "vgg19_bn"
-  # kwargs:
-  #   weights: "IMAGENET1K_V1"
+#   # kwargs:
+#   #   weights: "IMAGENET1K_V1"
 method_kwargs:
   proj_hidden_dim: 2048
   proj_output_dim: 256
@@ -50,7 +53,7 @@ scheduler:
   name: "warmup_cosine"
 checkpoint:
   enabled: True
-  dir: "trained_models"
+  dir: "trained_models_19_09"
   frequency: 1
 auto_resume:
   enabled: False

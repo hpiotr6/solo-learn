@@ -19,6 +19,7 @@
 
 import inspect
 import os
+import logging
 
 import hydra
 import torch
@@ -64,13 +65,16 @@ else:
 
 @hydra.main(version_base="1.2")
 def main(cfg: DictConfig):
+    # configure logging at the root level of Lightning
+    logging.getLogger("lightning.pytorch").setLevel(logging.INFO)
+
     # hydra doesn't allow us to add new keys for "safety"
     # set_struct(..., False) disables this behavior and allows us to add more parameters
     # without making the user specify every single thing about the model
     OmegaConf.set_struct(cfg, False)
     cfg = parse_cfg(cfg)
 
-    seed_everything(cfg.seed)
+    cfg.seed = seed_everything(cfg.seed)
 
     assert cfg.method in METHODS, f"Choose from {METHODS.keys()}"
 

@@ -200,23 +200,24 @@ class BaseMethod(pl.LightningModule):
             self.features_dim: int = self.backbone.inplanes
             # remove fc layer
             self.backbone.fc = nn.Identity()
-            cifar = cfg.data.dataset in ["cifar10", "cifar100"]
-            if cifar:
+            # cifar = cfg.data.dataset in ["cifar10", "cifar100"]
+            if cfg.backbone.modify_to_cifar:
+                # if cifar:
                 self.backbone.conv1 = nn.Conv2d(
                     3, 64, kernel_size=3, stride=1, padding=2, bias=False
                 )
                 self.backbone.maxpool = nn.Identity()
 
         elif self.backbone_name.startswith("vgg"):
-            self.features_dim: int = 512
-            # remove fc layer
+            LAST_CONV = [
+                m
+                for _, m in self.backbone.named_modules()
+                if isinstance(m, torch.nn.Conv2d)
+            ][-1]
+            self.features_dim: int = LAST_CONV.out_channels
             self.backbone.classifier = nn.Identity()
-            cifar = cfg.data.dataset in ["cifar10", "cifar100"]
-            if cifar:
-                self.backbone.features[0] = nn.Conv2d(
-                    3, 64, kernel_size=3, stride=1, padding=2, bias=False
-                )
-                self.backbone.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+            # cifar = cfg.data.dataset in ["cifar10", "cifar100"]
+            self.backbone.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         else:
             self.features_dim: int = self.backbone.num_features
         ##############################
