@@ -28,6 +28,7 @@ from typing import Optional, Union
 import pytorch_lightning as pl
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.callbacks import Callback
+import wandb
 from solo.utils.misc import omegaconf_select
 
 
@@ -69,18 +70,30 @@ class Checkpointer(Callback):
         """
 
         cfg.checkpoint = omegaconf_select(cfg, "checkpoint", default={})
-        cfg.checkpoint.enabled = omegaconf_select(cfg, "checkpoint.enabled", default=False)
-        cfg.checkpoint.dir = omegaconf_select(cfg, "checkpoint.dir", default="trained_models")
-        cfg.checkpoint.frequency = omegaconf_select(cfg, "checkpoint.frequency", default=1)
-        cfg.checkpoint.keep_prev = omegaconf_select(cfg, "checkpoint.keep_prev", default=False)
+        cfg.checkpoint.enabled = omegaconf_select(
+            cfg, "checkpoint.enabled", default=False
+        )
+        cfg.checkpoint.dir = omegaconf_select(
+            cfg, "checkpoint.dir", default="trained_models"
+        )
+        cfg.checkpoint.frequency = omegaconf_select(
+            cfg, "checkpoint.frequency", default=1
+        )
+        cfg.checkpoint.keep_prev = omegaconf_select(
+            cfg, "checkpoint.keep_prev", default=False
+        )
 
         return cfg
 
     @staticmethod
     def random_string(letter_count=4, digit_count=4):
         tmp_random = random.Random(time.time())
-        rand_str = "".join(tmp_random.choice(string.ascii_lowercase) for _ in range(letter_count))
-        rand_str += "".join(tmp_random.choice(string.digits) for _ in range(digit_count))
+        rand_str = "".join(
+            tmp_random.choice(string.ascii_lowercase) for _ in range(letter_count)
+        )
+        rand_str += "".join(
+            tmp_random.choice(string.digits) for _ in range(digit_count)
+        )
         rand_str = list(rand_str)
         tmp_random.shuffle(rand_str)
         return "".join(rand_str)
@@ -127,7 +140,9 @@ class Checkpointer(Callback):
             args = OmegaConf.to_container(self.cfg)
             args["wandb_run_id"] = getattr(self, "wandb_run_id", None)
             json_path = self.path / "args.json"
-            json.dump(args, open(json_path, "w"), default=lambda o: "<not serializable>")
+            json.dump(
+                args, open(json_path, "w"), default=lambda o: "<not serializable>"
+            )
 
     def save(self, trainer: pl.Trainer):
         """Saves current checkpoint.
@@ -165,3 +180,16 @@ class Checkpointer(Callback):
         epoch = trainer.current_epoch  # type: ignore
         if epoch % self.frequency == 0:
             self.save(trainer)
+
+    def on_train_end(self, trainer: pl.Trainer, _):
+        """Tries to save model's directory as artifact to Wandb
+
+        Args:
+            trainer (pl.Trainer): pytorch lightning trainer object.
+        """
+        if trainer.logger is None:
+            return
+
+        artifact = wandb.Artifact(name="my_model", type="model")
+        artifact.add_dir(self.path)
+        wandb.run.log_artifact(artifact)
