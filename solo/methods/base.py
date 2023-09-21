@@ -200,8 +200,9 @@ class BaseMethod(pl.LightningModule):
             self.features_dim: int = self.backbone.inplanes
             # remove fc layer
             self.backbone.fc = nn.Identity()
-            cifar = cfg.data.dataset in ["cifar10", "cifar100"]
-            if cifar:
+            # cifar = cfg.data.dataset in ["cifar10", "cifar100"]
+            if cfg.backbone.modify_to_cifar:
+                # if cifar:
                 self.backbone.conv1 = nn.Conv2d(
                     3, 64, kernel_size=3, stride=1, padding=2, bias=False
                 )
@@ -215,7 +216,7 @@ class BaseMethod(pl.LightningModule):
             ][-1]
             self.features_dim: int = LAST_CONV.out_channels
             self.backbone.classifier = nn.Identity()
-            cifar = cfg.data.dataset in ["cifar10", "cifar100"]
+            # cifar = cfg.data.dataset in ["cifar10", "cifar100"]
             self.backbone.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         else:
             self.features_dim: int = self.backbone.num_features
