@@ -26,7 +26,6 @@ backbone:
   kwargs:
     model_config:
       backbone_type: "resnet34"
-      only_features: True
       batchnorm_layers: True
       width_scale: 1
       skips: True
