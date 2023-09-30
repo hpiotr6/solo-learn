@@ -12,7 +12,7 @@ hydra:
   run:
     dir: .
 
-method: "simclr"
+# method: "simclr"
 # name: "resnet34_nomodify_noskips_3"
 # backbone:
 #   name: "resnet_custom"
@@ -20,13 +20,12 @@ method: "simclr"
 #   kwargs:
 #     model_config:
 #       backbone_type: "resnet34"
-#       only_features: True
 #       batchnorm_layers: True
 #       width_scale: 1
 #       skips: False
-name: "vgg19_bn_3"
-backbone:
-  name: "vgg19_bn"
+# name: "vgg19_bn_3"
+# backbone:
+#   name: "vgg19_bn"
 #   # kwargs:
 #   #   weights: "IMAGENET1K_V1"
 method_kwargs:
@@ -53,7 +52,7 @@ scheduler:
   name: "warmup_cosine"
 checkpoint:
   enabled: True
-  dir: "trained_models_19_09"
+  # dir: "trained_models_19_09"
   frequency: 1
 auto_resume:
   enabled: False

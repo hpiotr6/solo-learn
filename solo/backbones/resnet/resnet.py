@@ -232,9 +232,8 @@ class ResNet(nn.Module):
         return self._forward_impl(x)
 
 
-def build_resnet(model_config, num_classes=1000, dataset="cifar10"):
+def build_resnet(model_config, num_classes=1000):
     backbone_type = model_config.backbone_type
-    only_features = model_config.only_features
     batchnorm_layers = model_config.batchnorm_layers
     width_scale = model_config.width_scale
     skips = model_config.skips
@@ -258,14 +257,6 @@ def build_resnet(model_config, num_classes=1000, dataset="cifar10"):
             model = resnet(Bottleneck, [3, 8, 36, 3])
         case _:
             raise ValueError(f"Unknown backbone type: {backbone_type}")
-
-    if dataset == "cifar100" or dataset == "cifar10":
-        model.maxpool = torch.nn.Identity()
-        model.conv1 = torch.nn.Conv2d(
-            3, int(64 * width_scale), kernel_size=3, stride=1, padding=2, bias=False
-        )
-    if only_features:
-        model.fc = torch.nn.Identity()
 
     if not batchnorm_layers:
         # turn off batch norm tracking stats and learning parameters
