@@ -12,23 +12,26 @@ hydra:
   run:
     dir: .
 
-method: "barlow_twins"
+# wandb:
+#   project: "test_test"
+
+# method: "barlow_twins"
 
 # name: "vgg19_bn_3" # change here for cifar100
 # backbone:
 #   name: "vgg19_bn"
 
 
-name: "resnet34_3"
-backbone:
-  name: "resnet_custom"
-  modify_to_cifar: True
-  kwargs:
-    model_config:
-      backbone_type: "resnet34"
-      batchnorm_layers: True
-      width_scale: 1
-      skips: True
+# name: "resnet34_3"
+# backbone:
+#   name: "resnet_custom"
+#   modify_to_cifar: True
+#   kwargs:
+#     model_config:
+#       backbone_type: "resnet34"
+#       batchnorm_layers: True
+#       width_scale: 1
+#       skips: True
   
 method_kwargs:
   proj_hidden_dim: 2048
@@ -52,7 +55,7 @@ optimizer:
     exclude_bias_n_norm: True
 checkpoint:
   enabled: True
-  dir: "trained_models_19_09"
+  # dir: "trained_models_test"
   frequency: 1
 auto_resume:
   enabled: False
