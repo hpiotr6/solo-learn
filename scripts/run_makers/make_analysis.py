@@ -28,22 +28,23 @@ python3.10 -m solo.tunnel_project.tunnel_analysis --path {path}
         )
 
 
-def get_all_experiments_paths():
-    root = "trained_models_19_09"
+def get_all_experiments_paths(path):
     dirs = ["barlow_twins", "simclr"]
     all_experiments = []
     for directory in dirs:
         experiments_path = [
-            os.path.join(root, directory, exp)
-            for exp in os.listdir(os.path.join(root, directory))
-            if "noskips" in exp
+            os.path.join(path, directory, exp)
+            for exp in os.listdir(os.path.join(path, directory))
+            # if "noskips" in exp
         ]
         all_experiments.extend(experiments_path)
     return all_experiments
 
 
 if __name__ == "__main__":
-    experiments_paths = get_all_experiments_paths()
-    root = "runs/09.29_analysis"
+    path = "trained_models/09.30"
+    experiments_paths = get_all_experiments_paths(path)
+    date = Path(path).name
+    root = f"runs/{date}_analysis"
     for exp_p in experiments_paths:
         make(root, exp_p)
