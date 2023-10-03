@@ -12,7 +12,7 @@ hydra:
   run:
     dir: .
 
-# method: "simclr"
+method: "barlow_twins"
 # name: "resnet34_nomodify_noskips_3"
 # backbone:
 #   name: "resnet_custom"
@@ -31,7 +31,9 @@ hydra:
 method_kwargs:
   proj_hidden_dim: 2048
   proj_output_dim: 256
+  # temperature: 0.2
   temperature: 0.2
+  projector: "simclr"
 data:
   dataset: cifar10 # change here for cifar100
   train_path: "./datasets"

@@ -45,11 +45,12 @@ class SimCLR(BaseMethod):
         proj_output_dim: int = cfg.method_kwargs.proj_output_dim
 
         # projector
-        self.projector = nn.Sequential(
-            nn.Linear(self.features_dim, proj_hidden_dim),
-            nn.ReLU(),
-            nn.Linear(proj_hidden_dim, proj_output_dim),
-        )
+        if self.projector is None:
+            self.projector = nn.Sequential(
+                nn.Linear(self.features_dim, proj_hidden_dim),
+                nn.ReLU(),
+                nn.Linear(proj_hidden_dim, proj_output_dim),
+            )
 
     @staticmethod
     def add_and_assert_specific_cfg(cfg: omegaconf.DictConfig) -> omegaconf.DictConfig:
@@ -78,7 +79,9 @@ class SimCLR(BaseMethod):
             List[dict]: list of learnable parameters.
         """
 
-        extra_learnable_params = [{"name": "projector", "params": self.projector.parameters()}]
+        extra_learnable_params = [
+            {"name": "projector", "params": self.projector.parameters()}
+        ]
         return super().learnable_params + extra_learnable_params
 
     def forward(self, X: torch.tensor) -> Dict[str, Any]:
