@@ -60,6 +60,11 @@ from solo.utils.misc import omegaconf_select, remove_bias_and_norm_from_weight_d
 from solo.utils.momentum import MomentumUpdater, initialize_momentum_params
 from torch.optim.lr_scheduler import MultiStepLR
 
+from .projectors import (
+    simclr_proj,
+    barlow_proj,
+)
+
 
 def static_lr(
     get_lr: Callable,
@@ -112,6 +117,7 @@ class BaseMethod(pl.LightningModule):
         "exponential",
         "none",
     ]
+    _PROJECTORS = {"barlow": barlow_proj, "simclr": simclr_proj}
 
     def __init__(self, cfg: omegaconf.DictConfig):
         """Base model that implements all basic operations for all self-supervised methods.
@@ -280,6 +286,13 @@ class BaseMethod(pl.LightningModule):
 
         # keep track of validation metrics
         self.validation_step_outputs = []
+
+        if cfg.method_kwargs.projector is not None:
+            self.projector = BaseMethod._PROJECTORS[cfg.method_kwargs.projector](
+                features_dim=self.features_dim,
+                proj_hidden_dim=cfg.method_kwargs.proj_hidden_dim,
+                proj_output_dim=cfg.method_kwargs.proj_output_dim,
+            )
 
     @staticmethod
     def add_and_assert_specific_cfg(cfg: omegaconf.DictConfig) -> omegaconf.DictConfig:

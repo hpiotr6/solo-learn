@@ -46,6 +46,8 @@ def plot_muliplot(x, repr, early, early_ood, bound, title, save_dir):
     # fig, ax1 = plt.subplots()
     fig, ax1 = plt.subplots(1, 1, figsize=(15, 10))
 
+    ax1.set_ylim(0, 8200)
+
     # Plot rank on the left y-axis
     ax1.plot(x, repr.mean(0), "bo-", label="Rank")
     ax1.plot(x, bound, "k--", label="Rank upper bound")
@@ -56,6 +58,7 @@ def plot_muliplot(x, repr, early, early_ood, bound, title, save_dir):
 
     # Create a second y-axis for accuracy on the right
     ax2 = ax1.twinx()
+    ax2.set_ylim(0, 1)
     ax2.plot(x, early.mean(0), "ro-", label="Acc")
     fill_between(lower_bound(early), upper_bound(early), color="red")
     ax2.set_ylabel("Accuracy")
@@ -83,14 +86,16 @@ def plot_muliplot(x, repr, early, early_ood, bound, title, save_dir):
 if __name__ == "__main__":
     dirs = ["barlow_twins", "simclr"]
     patterns = [
-        "resnet34_\d",
+        # "resnet34_\d",
         "resnet34_nomodify_noskips",
-        "resnet34_noskips",
-        "vgg19_bn",
+        "resnet34_nomodify_skips",
+        "resnet34_modify_noskips",
+        "resnet34_modify_skips",
+        # "vgg19_bn",
     ]
     for dir in dirs:
         for pattern in patterns:
-            root = os.path.join("results/09.24", dir)
+            root = os.path.join("results/09.30", dir)
             # root = "results/09.24/barlow_twins"
             title = f"{pattern}-{Path(root).name}".replace("_\d", "")
             x, repr, early, early_ood, bound = get_arrays(pattern, root)
