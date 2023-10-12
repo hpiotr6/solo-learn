@@ -95,7 +95,7 @@ if __name__ == "__main__":
     ]
     for dir in dirs:
         for pattern in patterns:
-            root = os.path.join("results/09.30", dir)
+            root = os.path.join("results/10.03", dir)
             # root = "results/09.24/barlow_twins"
             title = f"{pattern}-{Path(root).name}".replace("_\d", "")
             x, repr, early, early_ood, bound = get_arrays(pattern, root)

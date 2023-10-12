@@ -4,7 +4,7 @@ import json
 from omegaconf import DictConfig
 
 add_no = lambda x: "no" if  x else ""
-root = "trained_models/09.30/simclr"
+root = "trained_models/10.03/barlow_twins"
 
 for dir in os.listdir(root):
     experiment_dir_path = os.path.join(root, dir)

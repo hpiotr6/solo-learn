@@ -48,7 +48,7 @@ class BarlowTwins(BaseMethod):
         proj_output_dim: int = cfg.method_kwargs.proj_output_dim
 
         # projector
-        if self.projector is None:
+        if cfg.method_kwargs.projector is None:
             self.projector = nn.Sequential(
                 nn.Linear(self.features_dim, proj_hidden_dim),
                 nn.BatchNorm1d(proj_hidden_dim),

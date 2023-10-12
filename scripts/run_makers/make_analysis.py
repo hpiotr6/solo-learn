@@ -42,7 +42,7 @@ def get_all_experiments_paths(path):
 
 
 if __name__ == "__main__":
-    path = "trained_models/09.30"
+    path = "trained_models/10.03"
     experiments_paths = get_all_experiments_paths(path)
     date = Path(path).name
     root = f"runs/{date}_analysis"

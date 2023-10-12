@@ -12,33 +12,34 @@ hydra:
   run:
     dir: .
 
-wandb:
-  project: "optimize_simclr_resnet34_nomodify_noskips"
-method: "simclr"
-
-name: "resnet34"
-backbone:
-  name: "resnet_custom"
-  modify_to_cifar: False
-  kwargs:
-    model_config:
-      backbone_type: "resnet34"
-      batchnorm_layers: True
-      width_scale: 1
-      skips: False
-
-
+method: "barlow_twins"
+# name: "resnet34_nomodify_noskips_3"
+# backbone:
+#   name: "resnet_custom"
+#   modify_to_cifar: False
+#   kwargs:
+#     model_config:
+#       backbone_type: "resnet34"
+#       batchnorm_layers: True
+#       width_scale: 1
+#       skips: False
+# name: "vgg19_bn_3"
+# backbone:
+#   name: "vgg19_bn"
+#   # kwargs:
+#   #   weights: "IMAGENET1K_V1"
 method_kwargs:
   proj_hidden_dim: 2048
   proj_output_dim: 256
+  # temperature: 0.2
   temperature: 0.2
-  projector: 
+  projector: "simclr"
 data:
   dataset: cifar10 # change here for cifar100
   train_path: "./datasets"
   val_path: "./datasets"
   format: "image_folder"
-  num_workers: 14
+  num_workers: 4
 optimizer:
   name: "lars"
   batch_size: 256
@@ -52,18 +53,16 @@ optimizer:
 scheduler:
   name: "warmup_cosine"
 checkpoint:
-  enabled: False
-  dir: "trained_models_test"
+  enabled: True
+  # dir: "trained_models_19_09"
   frequency: 1
 auto_resume:
   enabled: False
 
 # overwrite PL stuff
-# overfit_batches: 10
-max_epochs: 10
-num_sanity_val_steps: 0
+max_epochs: 1000
 devices: [0]
-strategy: "auto"
 sync_batchnorm: True
 accelerator: "gpu"
+strategy: "ddp"
 precision: 16

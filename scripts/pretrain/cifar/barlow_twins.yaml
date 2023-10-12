@@ -12,35 +12,33 @@ hydra:
   run:
     dir: .
 
-# wandb:
-#   project: "test_test"
+wandb:
+  project: "optimize_barlow_resnet34_nomodify_noskips"
 
-method: "simclr"
+method: "barlow_twins"
 
 # name: "vgg19_bn_3" # change here for cifar100
 # backbone:
 #   name: "vgg19_bn"
 
 
-# name: "resnet34_3"
-# backbone:
-#   name: "resnet_custom"
-#   modify_to_cifar: True
-#   kwargs:
-#     model_config:
-#       backbone_type: "resnet34"
-#       batchnorm_layers: True
-#       width_scale: 1
-#       skips: True
-
+name: "resnet34"
+backbone:
+  name: "resnet_custom"
+  modify_to_cifar: False
+  kwargs:
+    model_config:
+      backbone_type: "resnet34"
+      batchnorm_layers: True
+      width_scale: 1
+      skips: False
 
   
 method_kwargs:
   proj_hidden_dim: 2048
   proj_output_dim: 2048
-  # scale_loss: 0.01
-  temperature: 0.2
-  projector: "barlow"
+  scale_loss: 0.01
+  projector:
 data:
   dataset: cifar10 # change here for cifar100
   train_path: "./datasets"
@@ -58,14 +56,14 @@ optimizer:
     eta: 0.02
     exclude_bias_n_norm: True
 checkpoint:
-  enabled: True
-  # dir: "trained_models_test"
+  enabled: False
+  dir: "trained_models_test"
   frequency: 1
 auto_resume:
   enabled: False
 
 # overwrite PL stuff
-max_epochs: 1000
+max_epochs: 50
 # overfit_batches: 10
 
 # gpu
@@ -74,7 +72,8 @@ scheduler:
 sync_batchnorm: True
 devices: [0]
 accelerator: "gpu"
-strategy: "ddp"
+strategy: "auto"
+num_sanity_val_steps: 0
 precision: 16
 
 # cpu
