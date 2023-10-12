@@ -1,0 +1,1 @@
+trenowanie polegało na tym że zamieniłem wszystkie parametry dla obu metod czyli dla simclr puściłem pojektor augemtnacje i wszystkie paramy jak w barlow

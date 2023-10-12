@@ -1,5 +1,8 @@
 slurm*.out
 data
+*.pptx
+results/**/*.html
+.DS_Store
 # # tensorboard dir
 # runs/
 
